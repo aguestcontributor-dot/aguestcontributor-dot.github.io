@@ -1,1 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            background: white;
+            padding: 3rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            font-size: 1.1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input.error {
+            border-color: #e74c3c;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            min-height: 20px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Voting Access</h1>
+        <p class="subtitle">Enter your 6-character access code</p>
+        
+        <div class="input-group">
+            <input 
+                type="text" 
+                id="codeInput" 
+                maxlength="6" 
+                placeholder="ABC123"
+                autocomplete="off"
+            >
+        </div>
+        
+        <button onclick="validateCode()">Submit</button>
+        
+        <div class="error-message" id="errorMessage"></div>
+    </div>
+
+    <script>
+        // CONFIGURATION: Add your valid codes here
+        const validCodes = [
+            "ABC123", "DEF456", "GHI789", "JKL012", "MNO345",
+            "PQR678", "STU901", "VWX234", "YZA567", "BCD890",
+            "EFG123", "HIJ456", "KLM789", "NOP012", "QRS345",
+            "TUV678", "WXY901", "ZAB234", "CDE567", "FGH890",
+            "IJK123", "LMN456", "OPQ789", "RST012", "UVW345",
+            "XYZ678", "ABC901", "DEF234", "GHI567", "JKL890",
+            "MNO123", "PQR456", "STU789", "VWX012", "YZA345",
+            "BCD678", "EFG901", "HIJ234", "KLM567", "NOP890",
+            "QRS123", "TUV456", "WXY789", "ZAB012", "CDE345",
+            "FGH678", "IJK901", "LMN234", "OPQ567", "RST890",
+            "UVW123", "XYZ456", "ABC789", "DEF012", "GHI345",
+            "JKL678", "MNO901", "PQR234", "STU567", "VWX890",
+            "YZA123", "BCD456", "EFG789", "HIJ012", "KLM345",
+            "NOP678", "QRS901", "TUV234", "WXY567", "ZAB890",
+            "CDE123", "FGH456", "IJK789", "LMN012", "OPQ345",
+            "RST678", "UVW901", "XYZ234", "ABC567", "DEF890",
+            "GHI123", "JKL456", "MNO789", "PQR012", "STU345",
+            "VWX678", "YZA901", "BCD234", "EFG567", "FGH012"
+        ];
+        
+        // CONFIGURATION: Replace with your Google Form URL
+        const googleFormUrl = "https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform";
+
+        const input = document.getElementById('codeInput');
+        const errorMsg = document.getElementById('errorMessage');
+
+        // Auto-focus input on load
+        input.focus();
+
+        // Allow Enter key to submit
+        input.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                validateCode();
+            }
+        });
+
+        function validateCode() {
+            const code = input.value.trim().toUpperCase();
+            errorMsg.textContent = '';
+            input.classList.remove('error');
+
+            // Check if code is 6 characters
+            if (code.length !== 6) {
+                showError('Please enter a 6-character code');
+                return;
+            }
+
+            // Check if code has already been used on this device
+            if (localStorage.getItem('used_' + code)) {
+                showError('This code has already been used on this device');
+                return;
+            }
+
+            // Check if code is valid
+            if (!validCodes.includes(code)) {
+                showError('Invalid access code');
+                return;
+            }
+
+            // Mark code as used and redirect
+            localStorage.setItem('used_' + code, 'true');
+            window.location.href = googleFormUrl;
+        }
+
+        function showError(message) {
+            errorMsg.textContent = message;
+            input.classList.add('error');
+            input.focus();
+        }
+    </script>
+</body>
+</html>
